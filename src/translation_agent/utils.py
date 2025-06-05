@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import Union
 
 import openai
 import tiktoken
@@ -9,7 +9,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 load_dotenv()  # read local .env file
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
+api_key = os.getenv("OPENAI_API_KEY")
+assert api_key
+model_name = os.getenv("MODEL_NAME", "gpt-4-turbo")
+
+client = openai.OpenAI(api_key=api_key, base_url=api_base)
 
 MAX_TOKENS_PER_CHUNK = (
     1000  # if text is more than this many tokens, we'll break it up into
@@ -20,7 +25,7 @@ MAX_TOKENS_PER_CHUNK = (
 def get_completion(
     prompt: str,
     system_message: str = "You are a helpful assistant.",
-    model: str = "gpt-4-turbo",
+    model: str = model_name,  # "gpt-4-turbo",
     temperature: float = 0.3,
     json_mode: bool = False,
 ) -> Union[str, dict]:
@@ -92,7 +97,9 @@ Do not provide any explanations or text apart from the translation.
 
 {target_lang}:"""
 
-    translation = get_completion(translation_prompt, system_message=system_message)
+    translation = get_completion(
+        translation_prompt, system_message=system_message
+    )
 
     return translation
 
@@ -168,7 +175,9 @@ Write a list of specific, helpful and constructive suggestions for improving the
 Each suggestion should address one specific part of the translation.
 Output only the suggestions and nothing else."""
 
-    reflection = get_completion(reflection_prompt, system_message=system_message)
+    reflection = get_completion(
+        reflection_prompt, system_message=system_message
+    )
     return reflection
 
 
@@ -286,18 +295,18 @@ def num_tokens_in_string(
 
 
 def multichunk_initial_translation(
-    source_lang: str, target_lang: str, source_text_chunks: List[str]
-) -> List[str]:
+    source_lang: str, target_lang: str, source_text_chunks: list[str]
+) -> list[str]:
     """
     Translate a text in multiple chunks from the source language to the target language.
 
     Args:
         source_lang (str): The source language of the text.
         target_lang (str): The target language for translation.
-        source_text_chunks (List[str]): A list of text chunks to be translated.
+        source_text_chunks (list[str]): A list of text chunks to be translated.
 
     Returns:
-        List[str]: A list of translated text chunks.
+        list[str]: A list of translated text chunks.
     """
 
     system_message = f"You are an expert linguist, specializing in translation from {source_lang} to {target_lang}."
@@ -347,22 +356,22 @@ Output only the translation of the portion you are asked to translate, and nothi
 def multichunk_reflect_on_translation(
     source_lang: str,
     target_lang: str,
-    source_text_chunks: List[str],
-    translation_1_chunks: List[str],
+    source_text_chunks: list[str],
+    translation_1_chunks: list[str],
     country: str = "",
-) -> List[str]:
+) -> list[str]:
     """
     Provides constructive criticism and suggestions for improving a partial translation.
 
     Args:
         source_lang (str): The source language of the text.
         target_lang (str): The target language of the translation.
-        source_text_chunks (List[str]): The source text divided into chunks.
-        translation_1_chunks (List[str]): The translated chunks corresponding to the source text chunks.
+        source_text_chunks (list[str]): The source text divided into chunks.
+        translation_1_chunks (list[str]): The translated chunks corresponding to the source text chunks.
         country (str): Country specified for the target language.
 
     Returns:
-        List[str]: A list of reflections containing suggestions for improving each translated chunk.
+        list[str]: A list of reflections containing suggestions for improving each translated chunk.
     """
 
     system_message = f"You are an expert linguist specializing in translation from {source_lang} to {target_lang}. \
@@ -468,22 +477,22 @@ Output only the suggestions and nothing else."""
 def multichunk_improve_translation(
     source_lang: str,
     target_lang: str,
-    source_text_chunks: List[str],
-    translation_1_chunks: List[str],
-    reflection_chunks: List[str],
-) -> List[str]:
+    source_text_chunks: list[str],
+    translation_1_chunks: list[str],
+    reflection_chunks: list[str],
+) -> list[str]:
     """
     Improves the translation of a text from source language to target language by considering expert suggestions.
 
     Args:
         source_lang (str): The source language of the text.
         target_lang (str): The target language for translation.
-        source_text_chunks (List[str]): The source text divided into chunks.
-        translation_1_chunks (List[str]): The initial translation of each chunk.
-        reflection_chunks (List[str]): Expert suggestions for improving each translated chunk.
+        source_text_chunks (list[str]): The source text divided into chunks.
+        translation_1_chunks (list[str]): The initial translation of each chunk.
+        reflection_chunks (list[str]): Expert suggestions for improving each translated chunk.
 
     Returns:
-        List[str]: The improved translation of each chunk.
+        list[str]: The improved translation of each chunk.
     """
 
     system_message = f"You are an expert linguist, specializing in translation editing from {source_lang} to {target_lang}."
@@ -560,12 +569,12 @@ def multichunk_translation(
     Args:
         source_lang (str): The source language of the text chunks.
         target_lang (str): The target language for translation.
-        source_text_chunks (List[str]): The list of source text chunks to be translated.
-        translation_1_chunks (List[str]): The list of initial translations for each source text chunk.
-        reflection_chunks (List[str]): The list of reflections on the initial translations.
+        source_text_chunks (list[str]): The list of source text chunks to be translated.
+        translation_1_chunks (list[str]): The list of initial translations for each source text chunk.
+        reflection_chunks (list[str]): The list of reflections on the initial translations.
         country (str): Country specified for the target language
     Returns:
-        List[str]: The list of improved translations for each source text chunk.
+        list[str]: The list of improved translations for each source text chunk.
     """
 
     translation_1_chunks = multichunk_initial_translation(
