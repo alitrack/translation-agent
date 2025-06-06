@@ -17,7 +17,9 @@ model_name = os.getenv("MODEL_NAME", "gpt-4-turbo")
 client = openai.OpenAI(api_key=api_key, base_url=api_base)
 
 MAX_TOKENS_PER_CHUNK = (
-    1000  # if text is more than this many tokens, we'll break it up into
+    int(
+        os.getenv("MAX_TOKENS_PER_CHUNK", 1000)
+    )  # if text is more than this many tokens, we'll break it up into
 )
 # discrete chunks to translate one chunk at a time
 

@@ -1,22 +1,10 @@
-import os
 import sys
 
 import translation_agent as ta
 
 
-if __name__ == "__main__":
-    if len(sys.argv) == 1:
-        print("please provide a path to a text file")
-        sys.exit(-1)
-
+def convert(full_path, output_path):
     source_lang, target_lang, country = "English", "Chinese", "China"
-
-    relative_path = sys.argv[1]
-
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    full_path = os.path.join(script_dir, relative_path)
-
     with open(full_path, encoding="utf-8") as file:
         source_text = file.read()
 
@@ -26,9 +14,19 @@ if __name__ == "__main__":
         source_text=source_text,
         country=country,
     )
-    if len(sys.argv) == 3:
-        output_path = sys.argv[2]
+    if output_path:
         with open(output_path, "w", encoding="utf-8") as file:
             file.write(translation)
     else:
         print(f"Translation:\n\n{translation}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) == 1:
+        print("please provide a path to a text file")
+        sys.exit(-1)
+
+    full_path = sys.argv[1]
+
+    output_path = sys.argv[2] if len(sys.argv) == 3 else None
+    convert(full_path, output_path)
