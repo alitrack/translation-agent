@@ -9,7 +9,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 load_dotenv()  # read local .env file
-api_base = os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1")
+api_base = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 api_key = os.getenv("OPENAI_API_KEY")
 assert api_key
 model_name = os.getenv("MODEL_NAME", "gpt-4-turbo")
